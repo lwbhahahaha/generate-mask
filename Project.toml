@@ -1,0 +1,10 @@
+[deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DICOM = "a26e6606-dd52-5f6a-a97f-4f611373d757"
+ImageEdgeDetection = "2b14c160-480b-11ea-1b58-656063328ff7"
+ImageFeatures = "92ff4b2b-8094-53d3-b29d-97f740f06cef"
+ImageFiltering = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+ProgressBars = "49802e3a-d2f1-5c88-81d8-b72133a6f568"
