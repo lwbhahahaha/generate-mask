@@ -23,8 +23,8 @@ begin
 	
 	function locate_cup_center_and_radius(img)
 	    img_filtered = mapwindow(median, img, (5,5))
-	    img_filtered = imfilter(img_filtered, Kernel.gaussian(19))
 	    img_filtered = imfilter(img_filtered, Kernel.gaussian(17))
+	    img_filtered = imfilter(img_filtered, Kernel.gaussian(13))
 	    img_edges = canny(img_filtered, (ImageFeatures.Percentile(99), ImageFeatures.Percentile(0)))
 	    dx, dy=imgradients(img_filtered, KernelFactors.ando5)
 	    img_phase = phase(dx, dy)
