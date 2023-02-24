@@ -1,0 +1,12 @@
+"recon_water_8cm_high.tif":	center = 1260.00, 1226.00	r = 459.80
+"recon_water_10cm_high.tif":	center = 1226.00, 1241.00	r = 607.05
+"recon_water_8cm_low.tif":	center = 1259.00, 1225.00	r = 458.85
+"recon_water_10cm_low.tif":	center = 1225.00, 1232.00	r = 602.30
+"recon_6mGy_helix_2_6_D_3Hz_high_0024.slice":	center = 1169.00, 1234.00	r = 601.35
+"recon_6mGy_helix_7_11_D_3Hz_low_0024.slice":	center = 1222.00, 1195.00	r = 607.05
+"recon_6mGy_helix_17_20_D_3Hz_high_0024.slice":	center = 1264.00, 1220.00	r = 601.35
+"recon_6mGy_helix_17_20_D_3Hz_low_0024.slice":	center = 1274.00, 1220.00	r = 596.60
+"recon_6mGy_helix_7_11_D_3Hz_high_0024.slice":	center = 1223.00, 1190.00	r = 603.25
+"recon_6mGy_helix_2_6_D_3Hz_low_0024.slice":	center = 1169.00, 1235.00	r = 602.30
+"recon_6mGy_helix_12_16_D_3Hz_high_0024.slice":	center = 1225.00, 1237.00	r = 605.15
+"recon_6mGy_helix_12_16_D_3Hz_low_0024.slice":	center = 1224.00, 1235.00	r = 601.35

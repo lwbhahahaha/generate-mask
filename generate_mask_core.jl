@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.22
+# v0.19.14
 
 using Markdown
 using InteractiveUtils
@@ -11,6 +11,7 @@ begin
 	Pkg.instantiate()
 	using DICOM
 	using Plots
+	using Printf
 	using Images
 	using CairoMakie
 	using Statistics
@@ -93,7 +94,7 @@ function trim_img(img, cup_r, cup_center_row, cup_center_col, tube_centers; tube
 end;
 
 # ╔═╡ b90b1bbf-d331-4db6-8650-d784e8933db4
-function single_image(imgs)
+function single_image(imgs, process_mode)
 	println("Started proccessing single images...")
 	failure_ct = 0
 	ct = size(imgs)[1]
@@ -107,15 +108,20 @@ function single_image(imgs)
 			failure_ct += 1
 		else
 			center, r, img_filtered, img_edges = result
-			r = r * 0.9
+			r = r * 0.95
 			center_row, center_col = center[1], center[2]
-			centers, tube_rs, debug = locate_tubes(img, r, center_row, center_col)
-			if size(centers)[1] == 0
-				println("\tFailed to locate tubes: [$path]")
-				failure_ct += 1
+			if process_mode == 1
+				output = trim_img(img, r, center_row, center_col, [])
+				push!(outputs, [path, output, center, r])
 			else
-				output = trim_img(img, r, center_row, center_col, centers; tube_trim_r = maximum(tube_rs) * 1.25)
-				push!(outputs, (path, output))
+				centers, tube_rs, debug = locate_tubes(img, r, center_row, center_col)
+				if size(centers)[1] == 0
+					println("\tFailed to locate tubes: [$path]")
+					failure_ct += 1
+				else
+					output = trim_img(img, r, center_row, center_col, centers; tube_trim_r = maximum(tube_rs) * 1.25)
+					push!(outputs, [path, output, center, r])
+				end
 			end
 		end
 	end
@@ -163,7 +169,7 @@ function dual_image(imgs_pair)
 				failure_ct += 1
 			else
 				output = trim_img(img_big, r_small, center_row, center_col, centers; tube_trim_r = maximum(tube_rs) * 1.25)
-				push!(outputs, (path_big, output))
+				push!(outputs, [path_big, output, center_big, r_small])
 			end
 		end
 	end
@@ -238,9 +244,10 @@ end;
 # ╔═╡ c55ecae3-f960-41a1-a6ed-fb71416f6511
 function write_images(outputs)
 	print("Saving $(size(outputs)[1]) images...")
+	output_str = []
 	Threads.@threads for output in outputs
 	# for output in outputs
-		path, img_data = output
+		path, img_data, center, r = output
 		splited = split(path, "/")
 		_splited = split(splited[1], "_")
 		_splited[1] = "output"
@@ -251,6 +258,7 @@ function write_images(outputs)
 		if endswith(path, ".slice")
 			dcm_data = dcm_parse(path)
 			dcm_data[(0x7fe0, 0x0010)] = img_data
+			push!(output_str, @sprintf "\"%s\":\tcenter = %.2f, %.2f\tr = %.2f" basename(path) center[1] center[2] r)
 			path = "modified_" * basename(path)
 			dcm_write(joinpath([output_dir, path]), dcm_data)
 		end
@@ -278,8 +286,15 @@ function write_images(outputs)
 				end
 				out_img_ifds[tag_number] = tag_data
 			end
+			push!(output_str, @sprintf "\"%s\":\tcenter = %.2f, %.2f\tr = %.2f" basename(path) center[1] center[2] r)
 			path = "modified_" * basename(path)
 			TiffImages.save(joinpath([output_dir, path]), out_img)
+		end
+	end
+	# save output_str
+	open("centers_and_radius.txt","a") do io
+		for str in output_str
+	   		println(io, str)
 		end
 	end
 	println("Done!")
@@ -319,15 +334,20 @@ end;
 # ╔═╡ d6a2d1aa-a822-11ed-2d6a-a9c9fee66fab
 function run!(process_mode = 0)
 	flush(stdout)
-	println("Process Mode = $process_mode\nOutput Mode = $output_mode")
-	if process_mode==0
-		imgs = read_single_images()
-		outputs = single_image(imgs)
-		write_images(imgs)
-	else
+	if process_mode==2
+		println("Process Mode = Pair Images")
 		imgs = read_pair_images()
 		outputs = dual_image(imgs)
-		write_images(imgs)
+		write_images(outputs)
+	else
+		if process_mode == 0
+			println("Process Mode = Single Images")
+		else
+			println("Process Mode = Single Images(CUP ONLY)")
+		end
+		imgs = read_single_images()
+		outputs = single_image(imgs, process_mode)
+		write_images(outputs)
 	end
 end;
 
@@ -340,20 +360,25 @@ println(
 
 	Process Mode:
 	0: single images;
-	1: pair images;
+	1: single images, but cup only;
+	2: pair images;
 	
 	Resutls are saved to `output` folder.")
 
+# ╔═╡ efe15b86-d311-4723-b188-a22a68e461ef
+# run!()
+
 # ╔═╡ Cell order:
 # ╠═0aa4b37f-f9dd-4c4f-b7d5-a76b3e247231
-# ╟─6ba7b7b9-1595-449d-9ff1-b4443675a1a9
-# ╟─6543b20d-f178-4033-a4db-c870215e2867
+# ╠═6ba7b7b9-1595-449d-9ff1-b4443675a1a9
+# ╠═6543b20d-f178-4033-a4db-c870215e2867
 # ╠═646a01a1-02ec-4e27-a210-0addbb5f4bbc
-# ╟─b90b1bbf-d331-4db6-8650-d784e8933db4
-# ╟─8f7cada9-6f58-44a4-b126-56dc0f4ef88c
-# ╟─3283b207-cbbc-4a29-9c4b-878e936b9784
-# ╟─fa0d19e6-8c70-4858-82fb-3307cf450dbf
+# ╠═b90b1bbf-d331-4db6-8650-d784e8933db4
+# ╠═8f7cada9-6f58-44a4-b126-56dc0f4ef88c
+# ╠═3283b207-cbbc-4a29-9c4b-878e936b9784
+# ╠═fa0d19e6-8c70-4858-82fb-3307cf450dbf
 # ╠═c55ecae3-f960-41a1-a6ed-fb71416f6511
 # ╟─3f400eff-847a-4872-840e-97ac6330d879
 # ╠═d6a2d1aa-a822-11ed-2d6a-a9c9fee66fab
 # ╠═42ba2c6f-a550-44ab-a175-adc03946057d
+# ╠═efe15b86-d311-4723-b188-a22a68e461ef
